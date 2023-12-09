@@ -15,7 +15,7 @@ function parseRow(row: string) {
     return [cardId, winningNumbers, extractedNumbers] as const
 }
 
-async function solve(inputFilePath: string) {
+async function solve(inputFilePath: string)  {
     const data = await fs.readFile(inputFilePath)
     console.log(timer.lap())
     const rows = data.toString().split("\n").map(t => t.trim()).filter(Boolean)

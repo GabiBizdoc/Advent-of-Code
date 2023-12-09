@@ -1,0 +1,24 @@
+package testcom
+
+import (
+	"testing"
+)
+
+type solutionSolver func(inputFilePath string) (int, error)
+
+func SolveAOC(t testing.TB, expected int, filepath string, solver solutionSolver) {
+	result, err := solver(filepath)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if result == expected {
+		t.Log(result)
+	} else {
+		t.Errorf("Expected %d, but got %d", expected, result)
+	}
+}
+
+const Part1ShortFilepath = "../part1-short.txt"
+const Part2ShortFilepath = "../part2-short.txt"
+const LongFilepath = "../input-long.txt"
