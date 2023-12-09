@@ -1,7 +1,7 @@
 package solution
 
 import (
-	"aoc/y2023/com"
+	"aoc/com"
 	"aoc/y2023/day5/part1/solution/mapper"
 	"bufio"
 	"fmt"

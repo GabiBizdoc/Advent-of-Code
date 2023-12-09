@@ -1,7 +1,7 @@
 package solution
 
 import (
-	"aoc/y2023/com"
+	"aoc/com"
 	"fmt"
 	"regexp"
 	"strconv"

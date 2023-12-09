@@ -1,7 +1,7 @@
 package solution
 
 import (
-	"aoc/y2023/com"
+	"aoc/com"
 	. "aoc/y2023/day5/part2/solution/almanac"
 	"aoc/y2023/day5/part2/solution/mapper"
 	"bufio"
