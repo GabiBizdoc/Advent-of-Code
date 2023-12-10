@@ -58,17 +58,21 @@ func (b *Board) ReadPoint(point *Point) rune {
 	return b.board[point.Line][point.Col]
 }
 
-func (b *Board) FindPartNumbers() []int {
-	partNumbers := make([]int, 0)
-	for _, p := range b.numbers {
-		if b.isPartNumber(p) {
-			partNumbers = append(partNumbers, b.readGridNumber(p))
+func (b *Board) FindStarsWithNeighbours() map[Point][]*GridNumber {
+	stars := make(map[Point][]*GridNumber)
+	for _, gridNum := range b.numbers {
+		if ok, point := b.isPartNumberWithStar(gridNum); ok {
+			// check if the symbol is a star
+			if b.ReadPoint(point) == '*' {
+				stars[*point] = append(stars[*point], gridNum)
+			}
 		}
 	}
-	return partNumbers
+
+	return stars
 }
 
-func (b *Board) readGridNumber(n *GridNumber) int {
+func (b *Board) ReadGridNumber(n *GridNumber) int {
 	value := 0
 	for _, point := range n.points {
 		digit := b.ReadPoint(point) - '0'
@@ -78,7 +82,8 @@ func (b *Board) readGridNumber(n *GridNumber) int {
 	return value
 }
 
-func (b *Board) isPartNumber(n *GridNumber) bool {
+func (b *Board) isPartNumberWithStar(n *GridNumber) (bool, *Point) {
+	// we don't want to change the original points
 	startPoint := *n.points[0]
 	endPoint := *n.points[len(n.points)-1]
 
@@ -93,12 +98,12 @@ func (b *Board) isPartNumber(n *GridNumber) bool {
 		endPoint.Col += 1
 	}
 
-	if isSymbol(b.ReadPoint(&startPoint)) {
-		return true
+	if p := b.ReadPoint(&startPoint); isSymbol(p) {
+		return true, &startPoint
 	}
 
 	if isSymbol(b.ReadPoint(&endPoint)) {
-		return true
+		return true, &endPoint
 	}
 
 	// check the above the line
@@ -106,7 +111,7 @@ func (b *Board) isPartNumber(n *GridNumber) bool {
 		above := startPoint.Line - 1
 		for i := startPoint.Col; i <= endPoint.Col; i++ {
 			if isSymbol(b.board[above][i]) {
-				return true
+				return true, &Point{Line: above, Col: i}
 			}
 		}
 	}
@@ -117,12 +122,12 @@ func (b *Board) isPartNumber(n *GridNumber) bool {
 
 		for i := startPoint.Col; i <= endPoint.Col; i++ {
 			if isSymbol(b.board[under][i]) {
-				return true
+				return true, &Point{Line: under, Col: i}
 			}
 		}
 	}
 
-	return false
+	return false, nil
 }
 
 func isSymbol(r rune) bool {

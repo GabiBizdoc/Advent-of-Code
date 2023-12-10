@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises'
 import * as console from "console";
-import {com} from "../../com";
+import {com} from "../../../com";
 
 
 class Point {
@@ -9,16 +9,16 @@ class Point {
 }
 
 function getValue(grid: string[][], l: number, c: number) {
-    const is = l >= 0 && l < grid.length && c >= 0 && c < grid[0].length
-    if (is) {
+    const ok = l >= 0 && l < grid.length && c >= 0 && c < grid[0].length
+    if (ok) {
         const value = grid[l][c]
-        return [value, is] as const
+        return [value, ok] as const
     }
     return [null, false] as const
 }
 
 async function main() {
-    const data = await fs.readFile("./p3/i2.txt")
+    const data = await fs.readFile("../input-long.txt")
     const rows = data.toString().split("\n").map(t => t.trim()).filter(Boolean)
     const grid = rows.map(row => row.split(''))
 
@@ -56,8 +56,8 @@ async function main() {
         let isSolution = false
 
         function check(t: ReturnType<typeof getValue>) {
-            const [value, is] = t
-            if (is) {
+            const [value, ok] = t
+            if (ok) {
                 if (value !== '.') {
                     isSolution = true
                 }
