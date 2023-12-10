@@ -1,12 +1,15 @@
 package testcom
 
 import (
+	"fmt"
 	"testing"
+	"time"
 )
 
 type solutionSolver func(inputFilePath string) (int, error)
 
 func SolveAOC(t testing.TB, expected int, filepath string, solver solutionSolver) {
+	start := time.Now()
 	result, err := solver(filepath)
 	if err != nil {
 		t.Error(err)
@@ -17,6 +20,7 @@ func SolveAOC(t testing.TB, expected int, filepath string, solver solutionSolver
 	} else {
 		t.Errorf("Expected %d, but got %d", expected, result)
 	}
+	fmt.Println("execution time: ", time.Since(start))
 }
 
 const Part1ShortFilepath = "../part1-short.txt"
