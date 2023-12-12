@@ -42,7 +42,7 @@ func StringsToInts(stringSlice []string) ([]int, error) {
 	return intSlice, nil
 }
 
-func MapSlice[T any, K any](s []T, pred func(x T) K) []K {
+func MapSlice[T, K any](s []T, pred func(x T) K) []K {
 	next := make([]K, len(s))
 	for i, t := range s {
 		next[i] = pred(t)
