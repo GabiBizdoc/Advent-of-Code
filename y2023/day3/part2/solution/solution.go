@@ -3,17 +3,25 @@ package solution
 import (
 	"aoc/y2023/day3/part2/solution/board"
 	"bufio"
+	"fmt"
+	"io"
 	"os"
 )
 
 func solveChallenge(inputFilePath string) (int, error) {
-	var solution int
-
+	fmt.Println(inputFilePath)
 	file, err := os.Open(inputFilePath)
 	if err != nil {
-		return solution, err
+		return 0, err
 	}
 	defer file.Close()
+
+	return Solve(file)
+}
+
+func Solve(file io.Reader) (int, error) {
+	var solution int
+
 	scanner := bufio.NewScanner(file)
 
 	b := board.NewBoard()
@@ -24,7 +32,7 @@ func solveChallenge(inputFilePath string) (int, error) {
 		}
 	}
 
-	if err = scanner.Err(); err != nil {
+	if err := scanner.Err(); err != nil {
 		return 0, err
 	}
 

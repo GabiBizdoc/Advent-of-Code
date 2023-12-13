@@ -28,13 +28,8 @@ func CreateConnection(connStr string) *sql.DB {
 
 var db *sql.DB
 
-func init() {
-	prepareDatabase()
-}
-
-func prepareDatabase() {
+func PrepareDatabase() {
 	fmt.Println("prepare database...")
-	env.LoadConfig()
 	db = CreateConnection(env.Config.DBConnectionString)
 	_, err := db.Exec(`CREATE TABLE IF NOT EXISTS requests (
     id SERIAL PRIMARY KEY,

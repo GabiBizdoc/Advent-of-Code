@@ -16,6 +16,14 @@ type RequestData struct {
 	Solution int    `json:"solution"`
 }
 
+var Limiter = limiter.New(limiter.Config{
+	Max:        6,
+	Expiration: 1 * time.Minute,
+	LimitReached: func(ctx *fiber.Ctx) error {
+		return ctx.Status(429).SendString("Too Many Requests. Wait a minute!")
+	},
+})
+
 func LoadRoutes(app *fiber.App) {
 	app.Get("/", func(ctx *fiber.Ctx) error {
 		return ctx.Render("list-problems", fiber.Map{
@@ -23,10 +31,15 @@ func LoadRoutes(app *fiber.App) {
 		})
 	})
 
-	app.Get("/solve", func(ctx *fiber.Ctx) error {
-		day := ctx.QueryInt("day")
-		part := ctx.QueryInt("part")
-
+	app.Get("/solve/day/:day/part/:part", func(ctx *fiber.Ctx) error {
+		day, err := ctx.ParamsInt("day")
+		if err != nil {
+			return err
+		}
+		part, err := ctx.ParamsInt("part")
+		if err != nil {
+			return err
+		}
 		if day <= 0 {
 			return fmt.Errorf("invalid day")
 		}
@@ -40,18 +53,15 @@ func LoadRoutes(app *fiber.App) {
 		})
 	})
 
-	app.Use(limiter.New(limiter.Config{
-		Max:        6,
-		Expiration: 1 * time.Minute,
-		LimitReached: func(ctx *fiber.Ctx) error {
-			return ctx.Status(429).SendString("Too Many Requests. Wait a minute!")
-		},
-	}))
-
-	app.Post("/check-solution", func(ctx *fiber.Ctx) error {
+	app.Post("/check-solution", Limiter, func(ctx *fiber.Ctx) error {
+		realIp, ok := ctx.Locals("realIP").(string)
+		fmt.Println("realIp", realIp)
 		rl := &db.RequestLog{
 			CreatedAt: time.Now(),
 			IP:        ctx.IP(),
+		}
+		if ok && realIp != "" {
+			rl.IP = realIp
 		}
 		_ = rl.Insert(ctx.Context())
 

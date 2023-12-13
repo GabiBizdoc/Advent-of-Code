@@ -24,7 +24,7 @@
         <tr>
             <td style=""><b>{{ .Id }}</b></td>
             <td style=""><b>Day {{.Day}}</b></td>
-            <td><a href="/solve?day={{ .Day }}&part={{ .Part }}">Part {{ .Part }}: {{.Name}}</a></td>
+            <td><a href="/solve/day/{{ .Day }}/part/{{ .Part }}">Part {{ .Part }}: {{.Name}}</a></td>
         </tr>
         {{end}}
         </tbody>

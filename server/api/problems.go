@@ -8,7 +8,7 @@ import (
 	day2part2 "aoc/y2023/day2/part2/solution"
 
 	day3part1 "aoc/y2023/day3/part1/solution"
-	//day3part2 "aoc/y2023/day3/part2/solution"
+	day3part2 "aoc/y2023/day3/part2/solution"
 
 	//day6part1 "aoc/y2023/day6/part1/solution"
 	//day6part2 "aoc/y2023/day6/part2/solution"
@@ -50,7 +50,7 @@ func ListProblems() []*Problem {
 	problems = append(problems, NewProblem("Cube Conundrum", 2, 2, day2part2.Solve))
 
 	problems = append(problems, NewProblem("Gear Ratios", 3, 1, day3part1.Solve))
-	//problems = append(problems, NewProblem("Gear Ratios", 3, 2, day3part2.Solve))
+	problems = append(problems, NewProblem("Gear Ratios", 3, 2, day3part2.Solve))
 
 	//problems = append(problems, NewProblem("Scratchcards", 4, 1, day4part1.Solve))
 	//problems = append(problems, NewProblem("Scratchcards", 4, 2, day4part2.Solve))
