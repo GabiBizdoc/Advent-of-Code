@@ -83,7 +83,7 @@ func fiberApp() *fiber.App {
 	})
 
 	app.Use(logger.New(logger.Config{
-		Format: "${time} [${locals:realIP}]:${port} ${pid} ${locals:requestid} ${status} - ${latency} ${method} ${path}\n",
+		Format: "${time} [${locals:realIP}]:${port} ${pid} ${locals:requestid} ${status} - ${latency} ${method} ${path} ?${queryParams}\n\t\t\t\t\tUser-Agent: ${header:User-Agent}\n",
 	}))
 
 	app.Use(compress.New(compress.Config{
