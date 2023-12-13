@@ -3,6 +3,7 @@ package solution
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"strconv"
 	"strings"
@@ -49,16 +50,19 @@ func findLast(nums []int) int {
 	}
 	return s
 }
-
 func solveChallenge(inputFilePath string) (int, error) {
 	fmt.Println(inputFilePath)
-	solution := 0
-
 	file, err := os.Open(inputFilePath)
 	if err != nil {
 		return 0, err
 	}
 	defer file.Close()
+
+	return Solve(file)
+}
+
+func Solve(file io.Reader) (int, error) {
+	solution := 0
 	scanner := bufio.NewScanner(file)
 
 	for scanner.Scan() {
@@ -73,12 +77,7 @@ func solveChallenge(inputFilePath string) (int, error) {
 		solution += sol
 	}
 
-	if err = scanner.Err(); err != nil {
-		return 0, err
-	}
-
-	fmt.Println("solution: ", solution)
-	return solution, nil
+	return solution, scanner.Err()
 }
 
 func SolveChallenge(inputFilePath string) (int, error) {

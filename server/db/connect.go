@@ -1,8 +1,11 @@
 package db
 
 import (
+	env "aoc/server/config"
 	"context"
 	"database/sql"
+	"fmt"
+	"github.com/gofiber/fiber/v2/log"
 	_ "github.com/lib/pq"
 )
 
@@ -21,4 +24,28 @@ func CreateConnection(connStr string) *sql.DB {
 		panic(err)
 	}
 	return db
+}
+
+var db *sql.DB
+
+func init() {
+	prepareDatabase()
+}
+
+func prepareDatabase() {
+	fmt.Println("prepare database...")
+	env.LoadConfig()
+	db = CreateConnection(env.Config.DBConnectionString)
+	_, err := db.Exec(`CREATE TABLE IF NOT EXISTS requests (
+    id SERIAL PRIMARY KEY,
+    ip VARCHAR(64),
+    created_at TIMESTAMP,
+    day INT,
+    part INT,
+    correct_answer BOOLEAN,
+    valid BOOLEAN
+);`)
+	if err != nil {
+		log.Fatal(err)
+	}
 }

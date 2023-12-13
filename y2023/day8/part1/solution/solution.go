@@ -3,17 +3,18 @@ package solution
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 )
 
-func solveChallenge(inputFilePath string) (int, error) {
+func Solve(file io.Reader) (int, error) {
 	var solution int
 
 	const START = "AAA"
 	const END = "ZZZ"
 
-	data, err := readData(inputFilePath)
+	data, err := readData(file)
 	if err != nil {
 		return 0, err
 	}
@@ -36,15 +37,20 @@ func solveChallenge(inputFilePath string) (int, error) {
 	return solution, nil
 }
 
-func readData(inputFilePath string) (*ProblemData, error) {
-	data := NewProblemData()
+func solveChallenge(inputFilePath string) (int, error) {
 	fmt.Println(inputFilePath)
-
 	file, err := os.Open(inputFilePath)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 	defer file.Close()
+
+	return Solve(file)
+}
+
+func readData(file io.Reader) (*ProblemData, error) {
+	data := NewProblemData()
+
 	scanner := bufio.NewScanner(file)
 
 	if scanner.Scan() {
@@ -68,11 +74,7 @@ func readData(inputFilePath string) (*ProblemData, error) {
 		data.Rows[index] = &RowItem{Left: leftPart, Right: rightPart}
 	}
 
-	if err = scanner.Err(); err != nil {
-		return nil, err
-	}
-
-	return data, nil
+	return data, scanner.Err()
 }
 
 func SolveChallenge(inputFilePath string) (int, error) {

@@ -3,6 +3,7 @@ package solution
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"math"
 	"os"
 	"strings"
@@ -49,9 +50,20 @@ func solveFor(data *ProblemData, start string) int {
 }
 
 func solveChallenge(inputFilePath string) (int, error) {
+	fmt.Println(inputFilePath)
+	file, err := os.Open(inputFilePath)
+	if err != nil {
+		return 0, err
+	}
+	defer file.Close()
+
+	return Solve(file)
+}
+
+func Solve(file io.Reader) (int, error) {
 	var solution int
 
-	data, err := readData(inputFilePath)
+	data, err := readData(file)
 	if err != nil {
 		return 0, err
 	}
@@ -72,15 +84,8 @@ func solveChallenge(inputFilePath string) (int, error) {
 	return solution, nil
 }
 
-func readData(inputFilePath string) (*ProblemData, error) {
+func readData(file io.Reader) (*ProblemData, error) {
 	data := NewProblemData()
-	fmt.Println(inputFilePath)
-
-	file, err := os.Open(inputFilePath)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
 	scanner := bufio.NewScanner(file)
 
 	if scanner.Scan() {
@@ -103,11 +108,7 @@ func readData(inputFilePath string) (*ProblemData, error) {
 		data.Rows[index] = &RowItem{Left: leftPart, Right: rightPart}
 	}
 
-	if err = scanner.Err(); err != nil {
-		return nil, err
-	}
-
-	return data, nil
+	return data, scanner.Err()
 }
 
 func SolveChallenge(inputFilePath string) (int, error) {

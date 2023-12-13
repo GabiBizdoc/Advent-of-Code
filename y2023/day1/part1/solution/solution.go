@@ -3,6 +3,7 @@ package solution
 import (
 	"bufio"
 	"errors"
+	"io"
 	"os"
 	"unicode"
 )
@@ -45,14 +46,9 @@ func processLine(line string) (int, error) {
 	return calibration, nil
 }
 
-func SolveChallenge(inputFilePath string) (int, error) {
+func Solve(file io.Reader) (int, error) {
 	var solution int
 
-	file, err := os.Open(inputFilePath)
-	if err != nil {
-		return solution, err
-	}
-	defer file.Close()
 	scanner := bufio.NewScanner(file)
 
 	for scanner.Scan() {
@@ -62,9 +58,19 @@ func SolveChallenge(inputFilePath string) (int, error) {
 			solution += calibration
 		}
 	}
-
-	if err = scanner.Err(); err != nil {
+	if err := scanner.Err(); err != nil {
 		return 0, err
 	}
+
 	return solution, nil
+}
+
+func SolveChallenge(inputFilePath string) (int, error) {
+	file, err := os.Open(inputFilePath)
+	if err != nil {
+		return 0, err
+	}
+	defer file.Close()
+
+	return Solve(file)
 }

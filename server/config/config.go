@@ -2,6 +2,7 @@ package env
 
 import (
 	"github.com/gofiber/fiber/v2/log"
+	"github.com/joho/godotenv"
 	"os"
 )
 
@@ -11,7 +12,11 @@ var Config struct {
 }
 
 func LoadConfig() {
+	if err := godotenv.Load(); err != nil {
+		panic(err)
+	}
 	Config.DBConnectionString = os.Getenv("DBConnectionString")
+	Config.AppHost = os.Getenv("AppHost")
 	err := validateConfig()
 	if err != nil {
 		log.Fatal(err)

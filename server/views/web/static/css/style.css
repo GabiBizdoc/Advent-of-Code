@@ -1,0 +1,72 @@
+:root {
+    --page-background: #d3bfa1;
+    --text-primary: #1c0707;
+    --action-primary: #fff19d;
+    --action-primary-hover: #d2c373;
+    --text-accent: #24277a;
+    background-color: var(--page-background);
+    color: var(--text-primary);
+
+    font-size: 16px;;
+}
+
+
+@media (min-width: 800px) {
+    :root {
+        font-size: 24px;
+    }
+}
+
+body {
+    height: 100vh;
+    padding: 0 1rem;
+}
+
+a {
+    color: var(--text-accent);
+}
+
+.page-container {
+    width: 100%;
+    max-width: 960px;
+    margin: 0 auto;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    /* white-space: pre-wrap; */
+}
+
+.container {
+    width: 100%;
+    max-width: 960px;
+    margin: 0 auto;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+}
+
+input, textarea, button {
+    font-size: 1rem;
+}
+
+input, textarea {
+    color: var(--text-primary);
+    background-color: var(--page-background);
+    border-radius: 10px;
+    border: 1px solid rgb(128, 128, 128);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+    padding: .2rem .4rem;
+    box-sizing: border-box;
+}
+
+.pt-1 {
+    padding-top: 1rem;
+}
+
+.primary-button {
+    border: 1px solid black;
+    border-radius: 3px;
+    background-color: var(--action-primary);
+    &:hover {
+        background-color: var(--action-primary-hover);
+    }
+}

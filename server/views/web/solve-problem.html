@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="/css/style.css" rel="stylesheet">
+    <script src="/js/fireworks.js"></script>
+</head>
+
+<style>
+    .your-solution {
+        font-weight: bold;
+        font-size: 2em;
+        margin-top: .64em;
+        margin-bottom: .32em;
+    }
+
+    #your-solution {
+        width: 100%;
+    }
+
+    .solution-container {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 2em;
+        @media screen and (max-width: 1000px) {
+            gap: 0;
+
+            & div {
+                width: 100%;
+                margin-bottom: .32em;
+            }
+        }
+    }
+</style>
+<body>
+<div class="page-container">
+    <form>
+        <div style="" class="solution-container">
+            <label for="your-solution" class="your-solution">Your solution for
+                <span> Day {{ .Day }} Part {{ .Part }}: </span></label>
+            <div style="">
+                <input  tabindex="2" id="your-solution" name="your-solution" autocomplete="off">
+            </div>
+        </div>
+
+        <label for="problem-input">Paste your input here.</label>
+        <button tabindex="3" type="submit" class="primary-button" style="float: right;">Check</button>
+        <div class="pt-1">
+            <textarea tabindex="1" id="problem-input" name="problem-input" autocomplete="off"
+                      style="width: 100%; height: 20rem; overflow-x: auto; white-space: nowrap; padding: 1rem;"></textarea>
+        </div>
+    </form>
+    <dialog>
+        <p id="response"></p>
+        <form method="dialog">
+            <button>OK</button>
+        </form>
+    </dialog>
+</div>
+</body>
+
+<style>
+</style>
+
+<script>
+    document.querySelector("form").addEventListener("submit", async (e) => {
+        e.preventDefault()
+        console.log(e)
+        const input = document.querySelector("#problem-input").value
+        const solution = document.querySelector("#your-solution").value
+        const params = new URLSearchParams(window.location.search)
+        const body = JSON.stringify({input, solution: +solution, day: +params.get('day'), part: +params.get('part')})
+
+        console.log(body)
+        const response = await fetch("/check-solution", {
+            method: "POST",
+            body: body,
+            headers: {
+                "Content-Type": "application/json"
+            }
+        })
+
+        const data = await response.text()
+        document.querySelector("#response").innerHTML = data
+
+        if (response.ok) {
+            await triggerFireworks()
+        }
+
+        document.querySelector("dialog").showModal()
+    })
+
+    document.querySelector("dialog").addEventListener('close', () => {
+        cancelFireworks()
+    })
+
+</script>
+</html>
