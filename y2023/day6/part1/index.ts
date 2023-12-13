@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
 import console from "node:console";
-import {Timer} from "../../com";
+import {Timer} from "../../../com";
 import yargs from "yargs";
 
 function equation(k: number, time: number, distance: number) {

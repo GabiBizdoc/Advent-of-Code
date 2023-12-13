@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import console from "node:console";
-import {Timer} from "../../com";
 import yargs from "yargs";
+import {Timer} from "../../../com";
 
 function equation(k: number, time: number, distance: number) {
     return k * (time - k) - distance;

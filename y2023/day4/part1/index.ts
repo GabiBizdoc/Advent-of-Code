@@ -1,7 +1,7 @@
 import * as fs from 'node:fs/promises'
 import * as console from "node:console";
 import yargs from "yargs";
-import {Timer} from "../../com";
+import {Timer} from "../../../com";
 
 const timer = new Timer()
 
@@ -15,46 +15,29 @@ function parseRow(row: string) {
     return [cardId, winningNumbers, extractedNumbers] as const
 }
 
-async function solve(inputFilePath: string) {
+async function solve(inputFilePath: string)  {
     const data = await fs.readFile(inputFilePath)
     console.log(timer.lap())
     const rows = data.toString().split("\n").map(t => t.trim()).filter(Boolean)
-
-    const cards = new Map<number, number>()
-    const clones = new Map<number, number>()
 
     let totalPoints = 0
     rows.map(parseRow).forEach(row => {
         const [cardId, winningNumbers, extractedNumbers] = row
 
-        let points = 0
+        let local = 0
         for (const num of winningNumbers) {
             const ind = extractedNumbers.findIndex((t: number) => t === num)
             if (ind != -1) {
                 extractedNumbers.splice(ind, 1)
-                points += 1
+                if (local === 0) {
+                    local = 1
+                } else  {
+                    local *= 2
+                }
             }
         }
-
-        cards.set(cardId, points)
-        for (let i = 1; i <= points; i++) {
-            const old = clones.get(cardId + i) || 0
-            clones.set(cardId + i, old + 1)
-        }
-
-        totalPoints += 1
+        totalPoints += local
     })
-
-    for (const cardId of clones.keys()) {
-        let points = cards.get(cardId)!
-        for (let j = 1; j <= points; j++) {
-            const nextCardId = cardId + j
-            if (clones.has(nextCardId)) {
-                clones.set(nextCardId, clones.get(nextCardId)! + clones.get(cardId)!)
-            }
-        }
-        totalPoints += clones.get(cardId)!
-    }
 
     return [totalPoints, timer.elapsed()]
 }
