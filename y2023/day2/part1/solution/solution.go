@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"strconv"
 	"strings"
@@ -12,16 +13,19 @@ import (
 type lineHandler = func(line string) (*Game, error)
 
 func solveChallenge(inputFilePath string, onLine lineHandler) (int, error) {
-	var solution int
-
 	file, err := os.Open(inputFilePath)
 	if err != nil {
-		return solution, err
+		return 0, err
 	}
 	defer file.Close()
+	return Solve(file)
+}
+
+func Solve(file io.Reader) (int, error) {
+	var solution int
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		if game, err := onLine(scanner.Text()); err != nil {
+		if game, err := LineParser(scanner.Text()); err != nil {
 			if !errors.Is(err, InvalidGameSet) {
 				return 0, err
 			}
@@ -30,7 +34,7 @@ func solveChallenge(inputFilePath string, onLine lineHandler) (int, error) {
 		}
 	}
 
-	if err = scanner.Err(); err != nil {
+	if err := scanner.Err(); err != nil {
 		return 0, err
 	}
 

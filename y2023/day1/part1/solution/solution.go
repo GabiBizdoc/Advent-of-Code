@@ -46,10 +46,10 @@ func processLine(line string) (int, error) {
 	return calibration, nil
 }
 
-func Solve(reader io.Reader) (int, error) {
+func Solve(file io.Reader) (int, error) {
 	var solution int
 
-	scanner := bufio.NewScanner(reader)
+	scanner := bufio.NewScanner(file)
 
 	for scanner.Scan() {
 		if calibration, err := processLine(scanner.Text()); err != nil {
@@ -58,10 +58,10 @@ func Solve(reader io.Reader) (int, error) {
 			solution += calibration
 		}
 	}
-
 	if err := scanner.Err(); err != nil {
 		return 0, err
 	}
+
 	return solution, nil
 }
 
