@@ -2,12 +2,12 @@ package main_test
 
 import (
 	testcom "aoc/com/test_com"
-	"aoc/y2023/day9/part1/solution"
+	"aoc/y2023/day4/part1/solution"
 	"testing"
 )
 
 func TestSolvePart1Short(t *testing.T) {
-	testcom.SolveAOC(t, 114, testcom.Part1ShortFilepath, solution.SolveChallenge)
+	testcom.SolveAOC(t, 13, testcom.Part1ShortFilepath, solution.SolveChallenge)
 }
 
 func TestSolvePart1Long(t *testing.T) {
