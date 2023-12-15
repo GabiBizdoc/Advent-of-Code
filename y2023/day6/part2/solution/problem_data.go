@@ -2,6 +2,11 @@ package solution
 
 import "math"
 
+type ProblemData struct {
+	Timing   int
+	Distance int
+}
+
 // DistanceEquation calculates the distance based on the given coefficients and time.
 //
 // Parameters:
@@ -32,6 +37,20 @@ func FindCoefficient(t, d int) int {
 		}
 	}
 	return k
+}
+
+// FindCoefficientUsingRoots is a better version of FindCoefficient
+func FindCoefficientUsingRoots(t, d int) int {
+	x1, x2 := FindRoots(float64(t), float64(d))
+	a, b := int(x1), int(x2)
+
+	// if the rounded-down value of x2 (Math.Floor(x2)) is a solution to the DistanceEquation,
+	// it means our distance is equal to their distance. Therefore, we ignore it.
+	if DistanceEquation(b, t, d) == 0 {
+		b -= 1
+	}
+
+	return b - a
 }
 
 // FindRoots calculates the roots of a quadratic equation and returns the results.

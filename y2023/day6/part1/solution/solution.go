@@ -39,8 +39,7 @@ func Solve(file io.Reader) (solution int, err error) {
 
 	for i, timing := range timings {
 		distance := distances[i]
-		k := FindCoefficient(timing, distance)
-		solution *= k
+		solution *= FindCoefficientUsingRoots(timing, distance)
 	}
 	return solution, scanner.Err()
 }
