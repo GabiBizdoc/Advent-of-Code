@@ -2,6 +2,8 @@ package api
 
 import (
 	"aoc/server/db"
+	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
@@ -10,10 +12,10 @@ import (
 )
 
 type RequestData struct {
-	Day      int    `json:"day"`
-	Part     int    `json:"part"`
-	Input    string `json:"input"`
-	Solution int    `json:"solution"`
+	Day      int         `json:"day" validate:"required"`
+	Part     int         `json:"part" validate:"required"`
+	Input    string      `json:"input" validate:"required"`
+	Solution json.Number `json:"solution" validate:"required"`
 }
 
 var Limiter = limiter.New(limiter.Config{
@@ -53,60 +55,70 @@ func LoadRoutes(app *fiber.App) {
 		})
 	})
 
-	app.Post("/check-solution", Limiter, func(ctx *fiber.Ctx) error {
-		realIp, ok := ctx.Locals("realIP").(string)
-		fmt.Println("realIp", realIp)
-		rl := &db.RequestLog{
-			CreatedAt: time.Now(),
-			IP:        ctx.IP(),
-		}
-		if ok && realIp != "" {
-			rl.IP = realIp
-		}
-		_ = rl.Insert(ctx.Context())
+	//app.Post("/check-solution", Limiter, timeout.NewWithContext(checkSolutionHandler, 5*time.Second))
+	app.Post("/check-solution", Limiter, checkSolutionHandler)
+}
 
-		data := &RequestData{}
-		err := ctx.BodyParser(data)
+func checkSolutionHandler(ctx *fiber.Ctx) error {
+	realIp, ok := ctx.Locals("realIP").(string)
+	fmt.Println("realIp", realIp)
+	rl := &db.RequestLog{
+		CreatedAt: time.Now(),
+		IP:        ctx.IP(),
+	}
+	if ok && realIp != "" {
+		rl.IP = realIp
+	}
+	_ = rl.Insert(ctx.Context())
+	defer func(rl *db.RequestLog, ctx context.Context) {
+		err := rl.Update(ctx)
 		if err != nil {
 			fmt.Println(err)
-			return err
 		}
-		rl.Day = data.Day
-		rl.Part = data.Part
-		_ = rl.Update(ctx.Context())
+	}(rl, ctx.Context())
 
-		if strings.TrimSpace(data.Input) == "" {
-			return ctx.Status(400).SendString("Your input is empty!")
-		}
-		if data.Day <= 0 {
-			return ctx.Status(400).SendString("Day can not be less than 0!")
-		}
-		if data.Part <= 0 {
-			return ctx.Status(400).SendString("Part can not be less than 0!")
-		}
+	data := &RequestData{}
+	err := ctx.BodyParser(data)
+	fmt.Println(data, ctx.FormValue("solution"))
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	rl.Day = data.Day
+	rl.Part = data.Part
 
-		for _, problem := range ListProblems() {
-			if problem.Day == data.Day && problem.Part == data.Part {
-				rl.Valid = true
+	if strings.TrimSpace(data.Input) == "" {
+		return ctx.Status(400).SendString("Your input is empty!")
+	}
+	if data.Day <= 0 {
+		return ctx.Status(400).SendString("Day can not be less than 0!")
+	}
+	if data.Part <= 0 {
+		return ctx.Status(400).SendString("Part can not be less than 0!")
+	}
+	userSolution, err := data.Solution.Int64()
+	if err != nil {
+		return err
+	}
 
-				solution, err := problem.Handler(strings.NewReader(data.Input))
-				if err != nil {
-					return err
-				}
+	for _, problem := range ListProblems() {
+		if problem.Day == data.Day && problem.Part == data.Part {
+			rl.Valid = true
 
-				fmt.Println(solution, " -> ", data.Solution)
-				if solution == data.Solution {
-					rl.CorrectAnswer = true
-					_ = rl.Update(ctx.Context())
-					return ctx.Status(200).SendString("Your answer is right!")
-				}
-				rl.CorrectAnswer = false
-				_ = rl.Update(ctx.Context())
-				return ctx.Status(400).SendString("Your answer is WRONG!")
+			solution, err := problem.Handler(strings.NewReader(data.Input))
+			if err != nil {
+				return err
 			}
+
+			fmt.Println("solution: ", solution, " user's solution: ", data.Solution)
+			if int64(solution) == userSolution {
+				rl.CorrectAnswer = true
+				return ctx.Status(200).SendString("Your answer is right!")
+			}
+			rl.CorrectAnswer = false
+			return ctx.Status(400).SendString("Your answer is WRONG!")
 		}
-		rl.Message = "Problem not found."
-		rl.Update(ctx.Context())
-		return ctx.Status(404).SendString("Problem not found.")
-	})
+	}
+	rl.Message = "Problem not found."
+	return ctx.Status(404).SendString("Problem not found.")
 }
