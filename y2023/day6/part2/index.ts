@@ -23,8 +23,6 @@ function findRoots(time: number, distance: number) {
 }
 
 function findMinMaxK(time: number, distance: number) {
-
-
     let cnt = 0
     for (let i = 1; i < time; i++) {
         if (equation(i, time, distance) > 0) {
