@@ -9,47 +9,70 @@ import (
 	"strings"
 )
 
-func parseLine(line string) ([]int, error) {
-	numsLiteral := strings.Split(line, " ")
-	nums := make([]int, 0, len(numsLiteral))
-	for _, n := range numsLiteral {
+func extractNumbersFromString(line string) ([]int, error) {
+	result := make([]int, 0)
+	for _, n := range strings.Split(line, " ") {
 		n = strings.TrimSpace(n)
 		if n != "" {
-			if x, err := strconv.Atoi(n); err != nil {
+			number, err := strconv.Atoi(n)
+			if err != nil {
 				return nil, err
-			} else {
-				nums = append(nums, x)
 			}
+			result = append(result, number)
 		}
 	}
-	return nums, nil
+	return result, nil
 }
 
-func computeNextLine(nums []int) []int {
-	next := make([]int, 0, len(nums)-1)
-	for i := 1; i < len(nums); i++ {
-		next = append(next, nums[i]-nums[i-1])
+func parseLine(line string) (*RowData, error) {
+	data := &RowData{}
+	var err error
+
+	line = strings.TrimSpace(line)
+	line = strings.TrimPrefix(line, "Card ")
+	parts := strings.Split(line, ": ")
+	data.GameID, err = strconv.Atoi(strings.TrimSpace(parts[0]))
+	if err != nil {
+		return nil, err
 	}
-	return next
+
+	gameParts := strings.Split(parts[1], " | ")
+	data.WinningNumbers, err = extractNumbersFromString(gameParts[0])
+	if err != nil {
+		return nil, err
+	}
+
+	data.ExtractedNumbers, err = extractNumbersFromString(gameParts[1])
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
 }
 
-func isZero(nums []int) bool {
-	for _, num := range nums {
-		if num != 0 {
-			return false
+func Solve(file io.Reader) (int, error) {
+	solution := 0
+	scanner := bufio.NewScanner(file)
+
+	game := make(map[int]int)
+	for scanner.Scan() {
+		line := scanner.Text()
+		rowData, err := parseLine(line)
+		if err != nil {
+			return 0, err
 		}
+		matchings := rowData.FindMatchings()
+
+		copies := 1 + game[rowData.GameID]
+		for i := 1; i <= matchings; i++ {
+			game[rowData.GameID+i] += copies
+		}
+		solution += game[rowData.GameID] + 1
 	}
-	return true
+
+	return solution, scanner.Err()
 }
 
-func findLast(nums []int) int {
-	s := 0
-	for isZero(nums) == false {
-		s += nums[len(nums)-1]
-		nums = computeNextLine(nums)
-	}
-	return s
-}
 func solveChallenge(inputFilePath string) (int, error) {
 	fmt.Println(inputFilePath)
 	file, err := os.Open(inputFilePath)
@@ -59,25 +82,6 @@ func solveChallenge(inputFilePath string) (int, error) {
 	defer file.Close()
 
 	return Solve(file)
-}
-
-func Solve(file io.Reader) (int, error) {
-	solution := 0
-	scanner := bufio.NewScanner(file)
-
-	for scanner.Scan() {
-		line := scanner.Text()
-		line = strings.TrimSpace(line)
-		nums, err := parseLine(line)
-		if err != nil {
-			return 0, err
-		}
-
-		sol := findLast(nums)
-		solution += sol
-	}
-
-	return solution, scanner.Err()
 }
 
 func SolveChallenge(inputFilePath string) (int, error) {

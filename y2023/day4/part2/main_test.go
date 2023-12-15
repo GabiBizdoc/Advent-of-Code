@@ -7,11 +7,11 @@ import (
 )
 
 func TestSolvePart1Short(t *testing.T) {
-	testcom.SolveAOC(t, 114, testcom.Part1ShortFilepath, solution.SolveChallenge)
+	testcom.SolveAOC(t, 30, testcom.Part1ShortFilepath, solution.SolveChallenge)
 }
 
 func TestSolvePart1Long(t *testing.T) {
-	testcom.SolveAOC(t, 1798691765, testcom.LongFilepath, solution.SolveChallenge)
+	testcom.SolveAOC(t, 10212704, testcom.LongFilepath, solution.SolveChallenge)
 }
 
 func BenchmarkSolvePart1Long(t *testing.B) {
