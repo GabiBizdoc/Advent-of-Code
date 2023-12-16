@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/log"
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/helmet"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -14,10 +15,8 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/gofiber/template/html/v2"
 	"html/template"
-	"log"
 	"os"
 	"os/signal"
-	"strings"
 	"time"
 )
 
@@ -44,7 +43,7 @@ func Start() {
 // fiberApp calls loadRoutes internally
 func fiberApp() *fiber.App {
 	engine := html.New("./server/views/web", ".html")
-	if strings.HasPrefix(env.Config.AppHost, "localhost") {
+	if env.Config.IsDev {
 		engine.Reload(true)
 	}
 
@@ -62,6 +61,7 @@ func fiberApp() *fiber.App {
 			if errors.As(err, &e) {
 				code = e.Code
 			}
+			log.Error(err)
 			return ctx.Status(code).SendString(err.Error())
 		},
 	})

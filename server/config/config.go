@@ -3,11 +3,13 @@ package env
 import (
 	"github.com/gofiber/fiber/v2/log"
 	"os"
+	"strings"
 )
 
 var Config struct {
 	DBConnectionString string
 	AppHost            string
+	IsDev              bool
 }
 
 func LoadConfig() {
@@ -16,6 +18,10 @@ func LoadConfig() {
 	err := validateConfig()
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	if strings.HasPrefix(Config.AppHost, "localhost") {
+		Config.IsDev = true
 	}
 }
 

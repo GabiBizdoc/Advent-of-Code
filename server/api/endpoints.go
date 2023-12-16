@@ -2,6 +2,7 @@ package api
 
 import (
 	"aoc/server/db"
+	"aoc/server/solver"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -55,7 +56,6 @@ func LoadRoutes(app *fiber.App) {
 		})
 	})
 
-	//app.Post("/check-solution", Limiter, timeout.NewWithContext(checkSolutionHandler, 5*time.Second))
 	app.Post("/check-solution", Limiter, checkSolutionHandler)
 }
 
@@ -79,7 +79,7 @@ func checkSolutionHandler(ctx *fiber.Ctx) error {
 
 	data := &RequestData{}
 	err := ctx.BodyParser(data)
-	fmt.Println(data, ctx.FormValue("solution"))
+	//fmt.Println(data, ctx.FormValue("solution"))
 	if err != nil {
 		fmt.Println(err)
 		return err
@@ -104,14 +104,18 @@ func checkSolutionHandler(ctx *fiber.Ctx) error {
 	for _, problem := range ListProblems() {
 		if problem.Day == data.Day && problem.Part == data.Part {
 			rl.Valid = true
-
-			solution, err := problem.Handler(strings.NewReader(data.Input))
-			if err != nil {
-				return err
+			result := solver.SolveProblem(30*time.Second, data.Day, data.Part, data.Input)
+			if result.Err != nil {
+				return result.Err
 			}
-
-			fmt.Println("solution: ", solution, " user's solution: ", data.Solution)
-			if int64(solution) == userSolution {
+			fmt.Println(
+				"day", problem.Day,
+				"part", problem.Part,
+				"solution: ", result.Solution,
+				"execution_time: ", result.ExecutionTime,
+				"total_time: ", result.RealTime,
+				"user's solution: ", data.Solution)
+			if int64(result.Solution) == userSolution {
 				rl.CorrectAnswer = true
 				return ctx.Status(200).SendString("Your answer is right!")
 			}
