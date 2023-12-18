@@ -1,32 +1,35 @@
 package api
 
 import (
-	day1part1 "aoc/y2023/day1/part1/solution"
-	day1part2 "aoc/y2023/day1/part2/solution"
+	day1part1 "aoc/y2023/day_01/part1/solution"
+	day1part2 "aoc/y2023/day_01/part2/solution"
 
-	day2part1 "aoc/y2023/day2/part1/solution"
-	day2part2 "aoc/y2023/day2/part2/solution"
+	day2part1 "aoc/y2023/day_02/part1/solution"
+	day2part2 "aoc/y2023/day_02/part2/solution"
 
-	day4part1 "aoc/y2023/day4/part1/solution"
-	day4part2 "aoc/y2023/day4/part2/solution"
+	day4part1 "aoc/y2023/day_04/part1/solution"
+	day4part2 "aoc/y2023/day_04/part2/solution"
 
-	day3part1 "aoc/y2023/day3/part1/solution"
-	day3part2 "aoc/y2023/day3/part2/solution"
+	day3part1 "aoc/y2023/day_03/part1/solution"
+	day3part2 "aoc/y2023/day_03/part2/solution"
 
-	day6part1 "aoc/y2023/day6/part1/solution"
-	day6part2 "aoc/y2023/day6/part2/solution"
+	day6part1 "aoc/y2023/day_06/part1/solution"
+	day6part2 "aoc/y2023/day_06/part2/solution"
 
-	day7part1 "aoc/y2023/day7/part1/solution"
-	day7part2 "aoc/y2023/day7/part2/solution"
+	day7part1 "aoc/y2023/day_07/part1/solution"
+	day7part2 "aoc/y2023/day_07/part2/solution"
 
-	day8part1 "aoc/y2023/day8/part1/solution"
-	day8part2 "aoc/y2023/day8/part2/solution"
+	day8part1 "aoc/y2023/day_08/part1/solution"
+	day8part2 "aoc/y2023/day_08/part2/solution"
 
-	day9part1 "aoc/y2023/day9/part1/solution"
-	day9part2 "aoc/y2023/day9/part2/solution"
+	day9part1 "aoc/y2023/day_09/part1/solution"
+	day9part2 "aoc/y2023/day_09/part2/solution"
 
-	//day11part1 "aoc/y2023/day11/part1/solution"
-	//day11part2 "aoc/y2023/day11/part2/solution"
+	//day11part1 "aoc/y2023/day_11/part1/solution"
+	//day11part2 "aoc/y2023/day_11/part2/solution"
+
+	day12part1 "aoc/y2023/day_12/part1/solution"
+	day12part2 "aoc/y2023/day_12/part2/solution"
 	"io"
 )
 
@@ -79,8 +82,8 @@ func ListProblems() []*Problem {
 	//problems = append(problems, NewProblem("Cosmic Expansion", 11, 1, day11part1.Solve))
 	//problems = append(problems, NewProblem("Cosmic Expansion", 11, 2, day11part2.Solve))
 
-	//problems = append(problems, NewProblem("Hot Springs", 12, 1, day12part1.Solve))
-	//problems = append(problems, NewProblem("Hot Springs", 12, 2, day12part2.Solve))
+	problems = append(problems, NewProblem("Hot Springs", 12, 1, day12part1.Solve2))
+	problems = append(problems, NewProblem("Hot Springs", 12, 2, day12part2.Solve2))
 
 	for i, problem := range problems {
 		problem.Id = i + 1

@@ -2,14 +2,14 @@ package main_test
 
 import (
 	testcom "aoc/com/test_com"
-	"aoc/y2023/day_12/part1/solution"
+	"aoc/y2023/day_03/part2/solution"
 	"testing"
 )
 
-const solutionShort = 405
-const solutionLong = 405
+const solutionShort = 467835
+const solutionLong = 79613331
 
-func TestSolveShort1(t *testing.T) {
+func TestSolveShort(t *testing.T) {
 	testcom.SolveAOC(t, solutionShort, testcom.Part1ShortFilepath, solution.SolveChallenge)
 }
 

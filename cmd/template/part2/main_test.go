@@ -2,7 +2,7 @@ package main_test
 
 import (
 	testcom "aoc/com/test_com"
-	"aoc/y2023/day12/part2/solution"
+	"aoc/y2023/day_12/part2/solution"
 	"testing"
 )
 

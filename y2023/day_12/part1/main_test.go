@@ -6,8 +6,8 @@ import (
 	"testing"
 )
 
-const solutionShort = 405
-const solutionLong = 405
+const solutionShort = 21
+const solutionLong = 7260
 
 func TestSolveShort1(t *testing.T) {
 	testcom.SolveAOC(t, solutionShort, testcom.Part1ShortFilepath, solution.SolveChallenge)
