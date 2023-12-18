@@ -6,6 +6,12 @@ import (
 	"strings"
 )
 
+func CloneSlice[T any](a []T) []T {
+	b := make([]T, len(a))
+	copy(b, a)
+	return b
+}
+
 func CloneReverseSlice[T any](s []T) []T {
 	b := make([]T, len(s))
 
@@ -40,6 +46,15 @@ func StringsToInts(stringSlice []string) ([]int, error) {
 	}
 
 	return intSlice, nil
+}
+
+func IntsToString(intSlice []int) []string {
+	strSlice := make([]string, len(intSlice))
+	for i, str := range intSlice {
+		num := strconv.Itoa(str)
+		strSlice[i] = num
+	}
+	return strSlice
 }
 
 func MapSlice[T, K any](s []T, pred func(x T) K) []K {

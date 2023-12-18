@@ -25,4 +25,5 @@ func SolveAOC(t testing.TB, expected int, filepath string, solver solutionSolver
 
 const Part1ShortFilepath = "../part1-short.txt"
 const Part2ShortFilepath = "../part2-short.txt"
+const TMP = "../tmp.txt"
 const LongFilepath = "../input-long.txt"
