@@ -12,6 +12,14 @@ func CloneSlice[T any](a []T) []T {
 	return b
 }
 
+func CloneGrid[T any](a [][]T) [][]T {
+	b := make([][]T, len(a))
+	for i := range b {
+		b[i] = CloneSlice(a[i])
+	}
+	return b
+}
+
 func CloneReverseSlice[T any](s []T) []T {
 	b := make([]T, len(s))
 
