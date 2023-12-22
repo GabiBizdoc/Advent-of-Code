@@ -1,35 +1,12 @@
 package solution
 
 import (
-	"fmt"
 	"strings"
 )
 
 const movableRock = 'O'
 const immovableRock = '#'
 const emptySpace = '.'
-
-func CalculateLoadAfterTiltingNorth(grid [][]rune) (solution int) {
-	rocksCount := 0
-	for j := 0; j < len(grid[0]); j++ {
-		for i := len(grid) - 1; i >= 0; i-- {
-			switch grid[i][j] {
-			case emptySpace:
-				continue
-			case movableRock:
-				rocksCount += 1
-			case immovableRock:
-				tmp := rocksCount * (rocksCount + 1) / 2
-				solution += (len(grid)-i)*rocksCount - tmp
-				rocksCount = 0
-			}
-		}
-		tmp := rocksCount * (rocksCount - 1) / 2
-		solution += len(grid)*rocksCount - tmp
-		rocksCount = 0
-	}
-	return solution
-}
 
 func CalculateLoad(grid [][]rune) (solution int) {
 	for i, line := range grid {
@@ -184,40 +161,4 @@ func gridToString(grid [][]rune) string {
 		}
 	}
 	return sb.String()
-}
-
-func Preview(grid [][]rune) int {
-	fmt.Println("-----------")
-	prettyPrint(grid)
-	fmt.Println(CalculateLoad(grid))
-
-	tiltNorth(grid)
-	fmt.Println("-----------")
-	prettyPrint(grid)
-	fmt.Println(CalculateLoad(grid))
-
-	tiltWest(grid)
-	fmt.Println("-----------")
-	prettyPrint(grid)
-	fmt.Println(CalculateLoad(grid))
-
-	tiltSouth(grid)
-	fmt.Println("-----------")
-	prettyPrint(grid)
-	fmt.Println(CalculateLoad(grid))
-
-	tiltEast(grid)
-	fmt.Println("-----------")
-	prettyPrint(grid)
-	fmt.Println(CalculateLoad(grid))
-
-	return CalculateLoad(grid)
-}
-
-func prettyPrint(grid [][]rune) {
-	for _, line := range grid {
-		fmt.Println(string(line))
-	}
-	fmt.Println()
-	fmt.Println()
 }
