@@ -2,6 +2,7 @@ package testcom
 
 import (
 	"fmt"
+	"path"
 	"testing"
 	"time"
 )
@@ -9,6 +10,10 @@ import (
 type solutionSolver func(inputFilePath string) (int, error)
 
 func SolveAOC(t testing.TB, expected int, filepath string, solver solutionSolver) {
+	if path.Ext(filepath) == "" {
+		filepath += ".txt"
+	}
+
 	start := time.Now()
 	result, err := solver(filepath)
 	if err != nil {
