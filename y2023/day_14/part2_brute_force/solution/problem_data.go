@@ -9,7 +9,7 @@ const movableRock = 'O'
 const immovableRock = '#'
 const emptySpace = '.'
 
-func CalculateLoad(grid [][]rune) (solution int) {
+func CalculateLoadAfterTiltingNorth(grid [][]rune) (solution int) {
 	rocksCount := 0
 	for j := 0; j < len(grid[0]); j++ {
 		for i := len(grid) - 1; i >= 0; i-- {
@@ -27,6 +27,17 @@ func CalculateLoad(grid [][]rune) (solution int) {
 		tmp := rocksCount * (rocksCount - 1) / 2
 		solution += len(grid)*rocksCount - tmp
 		rocksCount = 0
+	}
+	return solution
+}
+
+func CalculateLoad(grid [][]rune) (solution int) {
+	for i, line := range grid {
+		for _, c := range line {
+			if c == movableRock {
+				solution += len(grid) - i
+			}
+		}
 	}
 	return solution
 }
@@ -111,9 +122,9 @@ func tiltSouth(grid [][]rune) {
 		rocksCount = 0
 	}
 }
+
 func tiltEast(grid [][]rune) {
 	rocksCount := 0
-	//start := 0
 	for i := 0; i < len(grid); i++ {
 		for j := 0; j < len(grid[0]); j++ {
 			switch grid[i][j] {
@@ -148,7 +159,16 @@ func cycle(grid [][]rune) {
 }
 
 func CalculateLoadAfterCycles(grid [][]rune, cycles int) int {
-	for i := 0; i < cycles; i++ {
+	cache := make(map[string]int)
+	for i := 0; i <= cycles; i++ {
+		key := gridToString(grid)
+		if v, ok := cache[key]; ok {
+			loopSize := i - v
+			leftoverCycles := cycles - v - 1
+			return CalculateLoadAfterCycles(grid, leftoverCycles%loopSize)
+		} else {
+			cache[key] = i
+		}
 		cycle(grid)
 	}
 	return CalculateLoad(grid)
@@ -198,4 +218,6 @@ func prettyPrint(grid [][]rune) {
 	for _, line := range grid {
 		fmt.Println(string(line))
 	}
+	fmt.Println()
+	fmt.Println()
 }

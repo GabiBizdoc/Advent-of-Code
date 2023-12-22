@@ -27,7 +27,7 @@ func solve(file io.Reader, strategy func([][]rune) int) (solution int, err error
 }
 
 func Solve(file io.Reader) (solution int, err error) {
-	return solve(file, CalculateLoad)
+	return solve(file, CalculateLoadAfterTiltingNorth)
 }
 
 func solveChallenge(inputFilePath string) (int, error) {

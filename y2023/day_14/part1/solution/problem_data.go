@@ -1,6 +1,6 @@
 package solution
 
-func CalculateLoad(grid [][]rune) (solution int) {
+func CalculateLoadAfterTiltingNorth(grid [][]rune) (solution int) {
 	rocksCount := 0
 	for j := 0; j < len(grid[0]); j++ {
 		for i := len(grid) - 1; i >= 0; i-- {
