@@ -226,6 +226,12 @@ func SplitIntoChunks(in chan []byte, pool *sync.Pool) chan []byte {
 			last = slices.Clone(data[i:])
 			pool.Put(data[:0])
 		}
+		if len(last) > 0 {
+			if last[len(last)-1] != '\n' {
+				last = append(last, '\n')
+			}
+			out <- last
+		}
 		close(out)
 	}()
 
