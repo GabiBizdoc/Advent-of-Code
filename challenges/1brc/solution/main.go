@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"cmp"
 	"flag"
 	"fmt"
 	"io"
@@ -65,19 +64,41 @@ func main() {
 		panic(err)
 	}
 	defer file.Close()
+	compute(file)
+	fmt.Println(time.Since(start))
+}
+func compute(file *os.File) {
 	readOutChan, pool := ReadFile(file)
 	splitterOutChan := SplitIntoChunks(readOutChan, pool)
 	parserOutChan := ParseRows(splitterOutChan, workerCnt)
-	respSlice := AggregateResponses(parserOutChan)
-	slices.SortFunc(respSlice, func(a, b *Stats) int {
-		return cmp.Compare(a.Name, b.Name)
-	})
-	PrintResponse(respSlice, CustomWriter{})
+	respMap := AggregateResponsesMap(parserOutChan)
+	PrintResponseMap(respMap, CustomWriter{})
 
-	fmt.Println(time.Since(start))
+	//we don't need to sort the output
+	//respSlice := AggregateResponsesSlice(respMap)
+	//slices.SortFunc(respSlice, func(a, b *Stats) int {
+	//	return cmp.Compare(a.Name, b.Name)
+	//})
+	//PrintResponseSlice(respSlice, CustomWriter{})
 }
 
-func PrintResponse(stats []*Stats, w io.Writer) {
+func PrintResponseMap(stats map[string]*Stats, w io.Writer) {
+	var sb bytes.Buffer
+	sb.WriteByte('{')
+	separator := false
+	for name, v := range stats {
+		v.SetName(name)
+		if separator {
+			sb.WriteString(", ")
+		}
+		separator = true
+		sb.WriteString(v.Fmt())
+	}
+	sb.WriteByte('}')
+	w.Write(sb.Bytes())
+}
+
+func PrintResponseSlice(stats []*Stats, w io.Writer) {
 	var sb bytes.Buffer
 	sb.WriteByte('{')
 	separator := false
@@ -192,7 +213,7 @@ func ParseRows(in chan []byte, workerCnt int) chan map[string]*Stats {
 	return out
 }
 
-func AggregateResponses(in chan map[string]*Stats) []*Stats {
+func AggregateResponsesMap(in chan map[string]*Stats) map[string]*Stats {
 	final := make(map[string]*Stats, 10000)
 	for results := range in {
 		for k, v := range results {
@@ -204,8 +225,11 @@ func AggregateResponses(in chan map[string]*Stats) []*Stats {
 			}
 		}
 	}
-	respSlice := make([]*Stats, 0, len(final))
-	for k, v := range final {
+	return final
+}
+func AggregateResponsesSlice(finalMap map[string]*Stats) []*Stats {
+	respSlice := make([]*Stats, 0, len(finalMap))
+	for k, v := range finalMap {
 		v.SetName(k)
 		respSlice = append(respSlice, v)
 	}
