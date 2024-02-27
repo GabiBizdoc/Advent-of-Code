@@ -159,18 +159,22 @@ func ParseRows(in chan []byte, workerCnt int) chan map[string]*Stats {
 							// value := string(data[sep+1 : i])
 
 							nameSlice := data[start:sep]
-							valueSlice := data[sep+1 : i]
+
+							// the float becomes int
+							valueSlice := data[sep+1 : i-1]
+							valueSlice[len(valueSlice)-1] = data[i-1]
+
 							name := unsafe.String(unsafe.SliceData(nameSlice), len(nameSlice))
 							value := unsafe.String(unsafe.SliceData(valueSlice), len(valueSlice))
 							start = i + 1
 
-							//temp, err := strconv.ParseFloat(), 64)
-							temp, err := strconv.ParseFloat(value, 64)
+							temp1, err := strconv.Atoi(value)
 							if err != nil {
 								fmt.Println(string(data[sep:i]))
 								panic(err)
 							}
 							stats, ok := results[name]
+							temp := float64(temp1) / 10
 							if !ok {
 								results[name] = NewStats(temp)
 							} else {
