@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"github.com/GabiBizdoc/golang-playground/pkg/progressbar"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -16,13 +17,21 @@ import (
 func readArgs() (int, *os.File) {
 	var fileFlag string
 	var size int
-	flag.StringVar(&fileFlag, "file", "", "Output file")
-	flag.IntVar(&size, "size", 0, "Number of lines")
+	var help bool
+	flag.BoolVar(&help, "h", false, "Help")
+	flag.StringVar(&fileFlag, "output", "", "Output file: Example -output ./file.csv")
+	flag.IntVar(&size, "size", 0, "Number of lines: Example -size 1_000_000_000")
 	flag.Parse()
+
+	if help {
+		flag.Usage()
+		os.Exit(0)
+	}
 
 	fmt.Println(fileFlag, size)
 	if size <= 0 {
-		fmt.Println("Usage: go create_measurements.go -size <number of records to create> -file <output file>")
+		flag.Usage()
+		//fmt.Println("Usage: go create_measurements.go -size <number of records to create> -file <output file>")
 		os.Exit(1)
 	}
 	fmt.Println("Using size: ", size)
@@ -62,10 +71,16 @@ func main() {
 		}
 	}()
 
+	pb := progressbar.NewProgressBar(size)
+	pb.Label = "Progress: "
 	fmt.Println(strings.Repeat("==", 50))
-	out := generateData(size, 100_000, 2, 5)
-	done := WriteToFile(out, file)
-	<-done
+	const chunkSize = 100_000
+	out := generateData(size, chunkSize, 2, 10)
+	afterChunk := WriteToFile(out, file)
+	for range afterChunk {
+		pb.Update(chunkSize)
+	}
+	pb.Done()
 
 	elapsed := time.Since(start)
 	fmt.Printf("Created file with %d measurements in %s\n", size, elapsed)
@@ -155,18 +170,19 @@ func WriteToFile(in chan []byte, file *os.File) chan struct{} {
 }
 
 func writeToFile(in chan []byte, out chan struct{}, file *os.File) {
-	fmt.Println("writing to file, ", file.Name(), file)
+	fmt.Println("writing to file, ", file.Name())
 	w := bufio.NewWriter(file)
 	for data := range in {
 		_, err := w.Write(data)
 		if err != nil {
 			panic(err)
 		}
+		out <- struct{}{}
 	}
 	err := w.Flush()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	out <- struct{}{}
+	close(out)
 }

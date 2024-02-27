@@ -11,6 +11,7 @@ require (
 )
 
 require (
+	github.com/GabiBizdoc/golang-playground v0.0.0-20240228015426-73efc8594b46 // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
