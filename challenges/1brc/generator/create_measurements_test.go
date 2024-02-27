@@ -1,74 +1,81 @@
 package main
 
 import (
-	"os"
+	"bytes"
 	"strings"
 	"testing"
 )
 
-const chunkSize = 100_000_00
+const numberOfRows = 100_000_00
 
-func Benchmark_appendRowV1(t *testing.B) {
+func Benchmark_appendRowFormattedString(t *testing.B) {
 	w := strings.Builder{}
-	stations := GetHardcodedWeatherStations()
+	weather := NewWeatherStationsGenerator()
 	t.ResetTimer()
-
-	for i := 0; i < chunkSize; i++ {
-		err := appendRowV1(w, stations)
+	for i := 0; i < numberOfRows; i++ {
+		err := appendRowFormattedString(w, weather.RandomStation())
 		if err != nil {
 			panic(err)
 		}
 	}
 }
-func Benchmark_appendRowV2(t *testing.B) {
+func Benchmark_appendRowWithoutFormat(t *testing.B) {
 	w := strings.Builder{}
-	stations := GetHardcodedWeatherStations()
+	weather := NewWeatherStationsGenerator()
 	t.ResetTimer()
-
-	for i := 0; i < chunkSize; i++ {
-		err := appendRowV2(w, stations)
-		if err != nil {
-			panic(err)
-		}
+	for i := 0; i < numberOfRows; i++ {
+		appendRowWithoutFormat(w, weather.RandomStation())
 	}
 }
 
-func Benchmark_appendRowV3(t *testing.B) {
+func Benchmark_appendRowWithoutFormatScaled(t *testing.B) {
 	w := strings.Builder{}
-	stations := GetHardcodedWeatherStations()
+	weather := NewWeatherStationsGenerator()
 	t.ResetTimer()
-
-	for i := 0; i < chunkSize; i++ {
-		err := appendRowV3(w, stations)
-		if err != nil {
-			panic(err)
-		}
+	for i := 0; i < numberOfRows; i++ {
+		appendRowWithoutFormatScaled(w, weather.RandomStation())
 	}
 }
 
-func Benchmark_appendRowV4(t *testing.B) {
+func Benchmark_appendRowToByteSlice(t *testing.B) {
 	w := make([]byte, 0)
-	stations := GetHardcodedWeatherStations()
+	weather := NewWeatherStationsGenerator()
 	t.ResetTimer()
-
-	for i := 0; i < chunkSize; i++ {
-		w = appendRowV4(w, stations)
+	for i := 0; i < numberOfRows; i++ {
+		w = appendRowToByteSlice(w, weather.RandomStation())
 	}
 }
 
-func Benchmark_appendRowV4x2(t *testing.B) {
-	w := make([]byte, 0, chunkSize*10)
-	stations := GetHardcodedWeatherStations()
+func Benchmark_appendRowToByteSliceWithCapacity(t *testing.B) {
+	w := make([]byte, 0, numberOfRows*10)
+	weather := NewWeatherStationsGenerator()
 	t.ResetTimer()
-
-	for i := 0; i < chunkSize; i++ {
-		w = appendRowV4(w, stations)
+	for i := 0; i < numberOfRows; i++ {
+		w = appendRowToByteSlice(w, weather.RandomStation())
 	}
 }
 
-func Benchmark_generateAndWrite(t *testing.B) {
-	const size = 1_000_000_000
-	file, _ := os.OpenFile(os.DevNull, os.O_APPEND|os.O_WRONLY, os.ModeAppend)
+func Benchmark_appendRowUsingBuffer(t *testing.B) {
+	var w bytes.Buffer
+	weather := NewWeatherStationsGenerator()
 	t.ResetTimer()
-	writeFile(size, file)
+	for i := 0; i < numberOfRows; i++ {
+		appendRowUsingBuffer(&w, weather.RandomStation())
+	}
+}
+
+func Benchmark_generate(t *testing.B) {
+	t.ResetTimer()
+	out := generateData(numberOfRows, 100_000, 1000, 0)
+	for data := range out {
+		_ = data
+	}
+}
+
+func Benchmark_generate2(t *testing.B) {
+	t.ResetTimer()
+	out := generateData(numberOfRows, 100_000, 1, 5)
+	for data := range out {
+		_ = data
+	}
 }

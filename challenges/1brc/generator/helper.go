@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"sync"
 	"sync/atomic"
+	"time"
 )
 
 const itoaSize = 1000
@@ -35,7 +36,9 @@ func (c *CustomItoa) init() {
 
 func (c *CustomItoa) Parse(n int) string {
 	if c.m.Load() == false {
-		panic("custom itoa uninitialised")
+		for c.m.Load() == false {
+			time.Sleep(time.Millisecond)
+		}
 	}
 
 	if n < 0 {

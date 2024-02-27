@@ -1,6 +1,35 @@
 package main
 
-func GetHardcodedWeatherStations() []WeatherStation {
+import (
+	"math"
+	"math/rand/v2"
+)
+
+type WeatherStation struct {
+	ID              string
+	MeanTemperature float64
+}
+
+func (w *WeatherStation) Measurement() float64 {
+	m := rand.NormFloat64()*10 + w.MeanTemperature
+	return math.Round(m*10) / 10
+}
+
+type WeatherStationsGenerator struct {
+	stations []WeatherStation
+}
+
+func (wsg WeatherStationsGenerator) RandomStation() WeatherStation {
+	return wsg.stations[rand.IntN(len(wsg.stations))]
+}
+
+func NewWeatherStationsGenerator() WeatherStationsGenerator {
+	return WeatherStationsGenerator{
+		stations: getHardcodedWeatherStations(),
+	}
+}
+
+func getHardcodedWeatherStations() []WeatherStation {
 	return []WeatherStation{
 		{"Abha", 18.0},
 		{"Abidjan", 26.0},

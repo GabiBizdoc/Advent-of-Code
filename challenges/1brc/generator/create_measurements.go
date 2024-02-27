@@ -1,12 +1,10 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"flag"
 	"fmt"
-	"log"
-	"math"
-	"math/rand/v2"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -15,31 +13,16 @@ import (
 	"time"
 )
 
-type WeatherStation struct {
-	ID              string
-	MeanTemperature float64
-}
-
-func (w *WeatherStation) Measurement() float64 {
-	m := rand.NormFloat64()*10 + w.MeanTemperature
-	return math.Round(m*10) / 10
-}
-
-var customItoa = NewCustomItoa()
-
-func main() {
-	start := time.Now()
-
+func readArgs() (int, *os.File) {
 	var fileFlag string
 	var size int
 	flag.StringVar(&fileFlag, "file", "", "Output file")
 	flag.IntVar(&size, "size", 0, "Number of lines")
 	flag.Parse()
-	//fileFlag = os.DevNull
-	//size = 1_000_000_000
 
+	fmt.Println(fileFlag, size)
 	if size <= 0 {
-		fmt.Println("Usage: go create_measurements.go -size <number of records to create>")
+		fmt.Println("Usage: go create_measurements.go -size <number of records to create> -file <output file>")
 		os.Exit(1)
 	}
 	fmt.Println("Using size: ", size)
@@ -51,185 +34,139 @@ func main() {
 		file = os.Stdout
 	} else {
 		var err error
-		fileFlag = os.DevNull
-		file, err = os.OpenFile(fileFlag, os.O_APPEND|os.O_WRONLY, os.ModeAppend)
-		if err != nil {
-			panic(err)
-		}
-		fmt.Println("Using file: ", fileFlag)
 
+		fmt.Println("Using file: ", fileFlag)
 		absPath, err := filepath.Abs(fileFlag)
 		if err != nil {
 			fmt.Println("Error getting absolute path:", err)
+			return 0, nil
+		}
+		fmt.Println("Absolute path of the file:", absPath)
+
+		file, err = os.OpenFile(fileFlag, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println("Name of the file:", file.Name())
+	}
+	return size, file
+}
+
+func main() {
+	start := time.Now()
+	size, file := readArgs()
+	defer func() {
+		err := file.Close()
+		if err != nil {
 			return
 		}
+	}()
 
-		fmt.Println("Absolute path of the file:", absPath)
-		fmt.Println("Name of the file:", file.Name())
+	fmt.Println(strings.Repeat("==", 50))
+	out := generateData(size, 100_000, 2, 5)
+	done := WriteToFile(out, file)
+	<-done
 
-		defer func(file *os.File) {
-			fmt.Println("closing file: ", fileFlag)
-
-			err := file.Close()
-			if err != nil {
-				log.Println(err)
-			}
-		}(file)
-	}
-	fmt.Println("===========")
-
-	writeFile(size, file)
 	elapsed := time.Since(start)
 	fmt.Printf("Created file with %d measurements in %s\n", size, elapsed)
 }
 
-func writeFile(size int, file *os.File) {
-	stations := GetHardcodedWeatherStations()
-
-	chunkSize := 1_000_000
-	numberOfWorkers := size/chunkSize + 1
-
-	//fmt.Println("numberOfWorkers:", numberOfWorkers)
-	var wg sync.WaitGroup
-
-	in := make(chan []byte, 80)
-
-	var reader FileWriterHandler
-	out := reader.Write(in, file)
-	wg.Add(numberOfWorkers)
-
-	for n := 0; n < numberOfWorkers; n++ {
-		start := n * chunkSize
-		end := start + chunkSize
-
-		if end > size {
-			end = size
-		}
-		go func(wg *sync.WaitGroup, start, end int) {
-			defer wg.Done()
-			w := make([]byte, 0, 5000)
-			for i := start; i < end; i++ {
-				w = appendRowV4(w, stations)
-			}
-			in <- w
-		}(&wg, start, end)
-	}
-
-	wg.Wait()
-	close(in)
-	<-out
-	//fmt.Println("RowCount", reader.RowCount)
-}
-
-func appendRowV1(w strings.Builder, stations []WeatherStation) (err error) {
-	station := stations[rand.IntN(len(stations))]
-	_, err = w.WriteString(fmt.Sprintf("%s;%.1f\n", station.ID, station.Measurement()))
-	if err != nil {
-		fmt.Println("Error writing to buffer:", err)
-		return err
-	}
+func appendRowFormattedString(w strings.Builder, station WeatherStation) (err error) {
+	w.WriteString(fmt.Sprintf("%s;%.1f\n", station.ID, station.Measurement()))
 	return err
 }
-func appendRowV2(w strings.Builder, stations []WeatherStation) (err error) {
-	station := stations[rand.IntN(len(stations))]
-
-	_, err = w.WriteString(station.ID)
-	if err != nil {
-		fmt.Println("Error writing to buffer:", err)
-		return
-	}
-
-	_, err = w.WriteRune(';')
-	if err != nil {
-		fmt.Println("Error writing to buffer:", err)
-		return
-	}
-
+func appendRowWithoutFormat(w strings.Builder, station WeatherStation) {
+	w.WriteString(station.ID)
+	w.WriteByte(';')
 	measurement := strconv.FormatFloat(station.Measurement(), 'f', 1, 64)
-	_, err = w.WriteString(measurement)
-	if err != nil {
-		fmt.Println("Error writing to buffer:", err)
-		return
-	}
-
-	_, err = w.WriteRune('\n')
-	if err != nil {
-		fmt.Println("Error writing to buffer:", err)
-		return
-	}
-	return
+	w.WriteString(measurement)
+	w.WriteByte('\n')
 }
-func appendRowV3(w strings.Builder, stations []WeatherStation) (err error) {
-	station := stations[rand.IntN(len(stations))]
-
-	_, err = w.WriteString(station.ID)
-	if err != nil {
-		fmt.Println("Error writing to buffer:", err)
-		return
-	}
-
-	_, err = w.WriteRune(';')
-	if err != nil {
-		fmt.Println("Error writing to buffer:", err)
-		return
-	}
-
+func appendRowWithoutFormatScaled(w strings.Builder, station WeatherStation) {
+	w.WriteString(station.ID)
+	w.WriteByte(';')
 	measurement := strconv.Itoa(int(station.Measurement() * 10))
-	_, err = w.WriteString(measurement[0 : len(measurement)-1])
-	if err != nil {
-		fmt.Println("Error writing to buffer:", err)
-		return
-	}
-
-	_, err = w.WriteRune('.')
-	if err != nil {
-		fmt.Println("Error writing to buffer:", err)
-		return
-	}
-	_, err = w.WriteRune(rune(measurement[len(measurement)-1]))
-	if err != nil {
-		fmt.Println("Error writing to buffer:", err)
-		return
-	}
-	_, err = w.WriteRune('\n')
-	if err != nil {
-		fmt.Println("Error writing to buffer:", err)
-		return
-	}
-	return
+	w.WriteString(measurement[0 : len(measurement)-1])
+	w.WriteByte('.')
+	w.WriteByte(measurement[len(measurement)-1])
+	w.WriteByte('\n')
 }
-func appendRowV4(b []byte, stations []WeatherStation) []byte {
-	station := stations[rand.IntN(len(stations))]
+
+var customItoa = NewCustomItoa()
+
+func appendRowToByteSlice(b []byte, station WeatherStation) []byte {
 	b = append(b, station.ID...)
 	b = append(b, ';')
 	msm := int(station.Measurement() * 10)
-	//measurement := strconv.Itoa(msm)
 	measurement := customItoa.Parse(msm)
-
 	b = append(b, measurement[:len(measurement)-1]...)
 	b = append(b, '.')
 	b = append(b, measurement[len(measurement)-1])
 	b = append(b, '\n')
 	return b
 }
-
-type FileWriterHandler struct {
-	RowCount int
+func appendRowUsingBuffer(b *bytes.Buffer, station WeatherStation) {
+	b.WriteString(station.ID)
+	b.WriteByte(';')
+	msm := int(station.Measurement() * 10)
+	measurement := customItoa.Parse(msm)
+	b.WriteString(measurement[:len(measurement)-1])
+	b.WriteByte('.')
+	b.WriteByte(measurement[len(measurement)-1])
+	b.WriteByte('\n')
 }
 
-func (r *FileWriterHandler) Write(in chan []byte, file *os.File) chan struct{} {
+func generateData(size, chunkSize, numberOfWorkers, bufferSize int) chan []byte {
+	weatherGenerator := NewWeatherStationsGenerator()
+	in := make(chan []byte, bufferSize)
+	var wg sync.WaitGroup
+	wg.Add(numberOfWorkers)
+
+	for n := 0; n < numberOfWorkers; n++ {
+		batch := size / numberOfWorkers
+		if n == 0 {
+			batch = batch + size - (numberOfWorkers * batch)
+		}
+		go func(wg *sync.WaitGroup, batch int) {
+			defer wg.Done()
+			for progress := 0; progress < batch; progress += chunkSize {
+				w := make([]byte, 0, chunkSize*10)
+
+				for i := 0; i < min(batch-progress, chunkSize); i++ {
+					w = appendRowToByteSlice(w, weatherGenerator.RandomStation())
+				}
+				in <- w
+			}
+		}(&wg, batch)
+	}
+
+	go func() {
+		wg.Wait()
+		close(in)
+	}()
+
+	return in
+}
+
+func WriteToFile(in chan []byte, file *os.File) chan struct{} {
 	out := make(chan struct{})
-	go r.write(in, out, file)
+	go writeToFile(in, out, file)
 	return out
 }
 
-func (r *FileWriterHandler) write(in chan []byte, out chan struct{}, file *os.File) {
+func writeToFile(in chan []byte, out chan struct{}, file *os.File) {
+	fmt.Println("writing to file, ", file.Name(), file)
+	w := bufio.NewWriter(file)
 	for data := range in {
-		r.RowCount += bytes.Count(data, []byte{'\n'})
-		_, err := file.Write(data)
+		_, err := w.Write(data)
 		if err != nil {
 			panic(err)
 		}
+	}
+	err := w.Flush()
+	if err != nil {
+		fmt.Println(err)
+		return
 	}
 	out <- struct{}{}
 }
