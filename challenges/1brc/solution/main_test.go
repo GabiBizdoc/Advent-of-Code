@@ -1,11 +1,9 @@
 package main
 
 import (
-	"cmp"
 	"os"
 	"path/filepath"
-	"runtime"
-	"slices"
+	"strings"
 	"sync"
 	"testing"
 )
@@ -18,12 +16,13 @@ func getFileName() string {
 	return name
 }
 
-func Benchmark_ReadFileLineByLine(b *testing.B) {
+func BenchmarkEverything(b *testing.B) {
 	file, err := os.Open(getFileName())
 	if err != nil {
 		panic(err)
 	}
-	ReadFileLineByLine(file)
+	defer file.Close()
+	compute(file)
 }
 
 func Benchmark_ReadFileOs(b *testing.B) {
@@ -32,6 +31,14 @@ func Benchmark_ReadFileOs(b *testing.B) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func Benchmark_ReadFileLineByLine(b *testing.B) {
+	file, err := os.Open(getFileName())
+	if err != nil {
+		panic(err)
+	}
+	ReadFileLineByLine(file)
 }
 
 func BenchmarkReadFileIntoChan(b *testing.B) {
@@ -55,18 +62,34 @@ func runReadFile(cb func(file *os.File) (out chan []byte, pool *sync.Pool)) {
 	}
 }
 
-func BenchmarkReadAndSplit(b *testing.B) {
-	file, err := os.Open(getFileName())
-	if err != nil {
-		panic(err)
+func cmpOutputs(t *testing.T, expected, result string) {
+	expectedMap := parseOutputString(expected)
+	ourMap := parseOutputString(result)
+
+	t.Log(len(expectedMap), len(ourMap))
+	if len(expectedMap) != len(ourMap) {
+		t.Fail()
 	}
-	defer file.Close()
-	readOut, pool := ReadFile(file)
-	splitterOut := SplitIntoChunks(readOut, pool)
-	parserOut := ParseRows(splitterOut, runtime.NumCPU())
-	respSlice := AggregateResponses(parserOut)
-	slices.SortFunc(respSlice, func(a, b *Stats) int {
-		return cmp.Compare(a.Name, b.Name)
-	})
-	PrintResponse(respSlice, CustomWriter{})
+	for k, v := range expectedMap {
+		ourValue, ok := ourMap[k]
+		if !ok {
+			t.Logf("missing key: `%s`", k)
+			t.Fail()
+		} else if ourValue != v {
+			t.Logf("key: `%s`: expected `%s` but got `%s`", k, v, ourValue)
+			t.Fail()
+		}
+	}
+}
+
+func parseOutputString(s string) map[string]string {
+	buf := s[1 : len(s)-1]
+	entries := strings.Split(buf, ", ")
+	m := make(map[string]string, len(entries))
+
+	for _, entry := range entries {
+		parts := strings.Split(entry, "=")
+		m[parts[0]] = parts[1]
+	}
+	return m
 }
