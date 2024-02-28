@@ -16,10 +16,11 @@ import (
 	"unsafe"
 )
 
-var weatherCSVFile = "./test.csv"
+var weatherCSVFile = "challenges/1brc/dist/weather_stations.csv"
 
-// const ioBufferSize = 64 << 10
-const ioBufferSize = 1 << 20
+const ioBufferSize = 64 << 10
+
+//const ioBufferSize = 1 << 20
 
 var workerCnt = runtime.NumCPU() * 4
 
@@ -47,12 +48,12 @@ type CustomWriter struct {
 }
 
 func (c CustomWriter) Close() error {
-	fmt.Println("closed")
 	return nil
 }
 
 func (c CustomWriter) Write(p []byte) (n int, err error) {
-	return os.Stdout.Write(p)
+	//return os.Stdout.Write(p)
+	return len(p), err
 }
 
 func main() {
@@ -128,11 +129,11 @@ func ReadFile(f *os.File) (out chan []byte, pool *sync.Pool) {
 		return make([]byte, 0, ioBufferSize)
 	}}
 	out = make(chan []byte, 1000)
-	go readFile2(f, pool, out)
+	go readFile(f, pool, out)
 	return out, pool
 }
 
-func readFile2(f *os.File, pool *sync.Pool, out chan []byte) {
+func readFile(f *os.File, pool *sync.Pool, out chan []byte) {
 	defer func() {
 		close(out)
 	}()

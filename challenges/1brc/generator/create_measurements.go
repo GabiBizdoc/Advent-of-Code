@@ -82,6 +82,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	fmt.Printf("%#v\n", config)
+
 	var file *os.File
 	if config.OutputFile == "" {
 		file = os.Stdout
