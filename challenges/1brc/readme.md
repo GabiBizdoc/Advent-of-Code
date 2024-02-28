@@ -4,7 +4,7 @@
 
 This project presents a solution to the One Billion Row Challenge (1BRC) using the Go programming language. The
 challenge involves optimizing a program to process temperature data from various weather stations, calculating minimum,
-mean, and maximum temperature values per station, and outputting the results sorted alphabetically by station name.
+mean, and maximum temperature values per station.
 
 ## Problem Statement
 
@@ -31,7 +31,7 @@ To generate the required data use the provided data generators
 
    ```sh
    cd challenges/1brc/bin/generator
-  ./generator-<platform> -size <number of records to create> -output <output file>
+  ./generator-<platform> -lines <number of records to create> -output <output file>
    ```
 
 Supported platforms:
@@ -46,16 +46,22 @@ Supported platforms:
 
 1. **Build it yourself:**
    ```sh
-   go build -o ./challenges/1brc/bin/generator/ ./challenges/1brc/generator 
+   go build -o ./challenges/1brc/bin/generator/ ./challenges/1brc/generator
    ```
    or
    ```sh
    cd challenges/1brc/bin
    sh ./build.sh
    ```
+   or
+
+   ```shell
+   go run ./challenges/1brc/generator -lines 1_000_000_000 -output /dev/null
+   ```
+
 2. **Run the program:**
    ```sh
    cd challenges/1brc/bin
-   ./bin/generator/generator -size <number of records to create> -output <output file>
-   ./bin/generator/generator-windows-amd64 -size 1_000_000_000 -output weather_data.csv
+   ./bin/generator/generator -lines <number of records to create> -output <output file>
+   ./bin/generator/generator-windows-amd64 -lines 1_000_000_000 -output weather_data.csv
    ```
