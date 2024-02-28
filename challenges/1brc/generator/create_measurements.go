@@ -14,78 +14,107 @@ import (
 	"time"
 )
 
-func readArgs() (int, *os.File) {
-	var fileFlag string
-	var size int
-	var help bool
-	flag.BoolVar(&help, "h", false, "Help")
-	flag.StringVar(&fileFlag, "output", "", "Output file: Example -output ./file.csv")
-	flag.IntVar(&size, "size", 0, "Number of lines: Example -size 1_000_000_000")
+type Config struct {
+	OutputFile        string
+	Lines             int
+	Generators        int
+	WriterChannelSize int
+	Help              bool
+}
+
+func NewConfig() *Config {
+	return &Config{Lines: 1000, Generators: 10, WriterChannelSize: 10, Help: false}
+}
+
+func parseArgs() (*Config, error) {
+	args := NewConfig()
+
+	flag.StringVar(&args.OutputFile, "output", "", "Output file. Skip for stdout: Example --output ./file.csv")
+	flag.IntVar(&args.Lines, "lines", 0, "Number of lines. Must be bigger than 0: Example --size 1_000_000_000")
+	flag.IntVar(&args.Generators, "generators", 0, "Number of goroutines used to generated data: --generators 10")
+	flag.IntVar(&args.WriterChannelSize, "writer-channel-size", 0, "Number of chunks buffered. Must be bigger than 0: --writer-channel-size 10")
+	flag.BoolVar(&args.Help, "h", false, "Help")
+
 	flag.Parse()
 
-	if help {
+	if args.Help {
+		flag.Usage()
+		os.Exit(0)
+	}
+	if args.Lines <= 0 {
 		flag.Usage()
 		os.Exit(0)
 	}
 
-	fmt.Println(fileFlag, size)
-	if size <= 0 {
-		flag.Usage()
-		//fmt.Println("Usage: go create_measurements.go -size <number of records to create> -file <output file>")
+	var err error
+	if args.OutputFile != "" {
+		args.OutputFile, err = filepath.Abs(args.OutputFile)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if args.Generators <= 0 {
+		const defaultValue = 10
+		fmt.Printf("generators must be at least 1. Changing it to %d. it was %d\n",
+			defaultValue, args.Generators)
+		args.Generators = defaultValue
+	}
+
+	if args.Lines <= 0 {
+		fmt.Println("lines must be at least 1")
 		os.Exit(1)
 	}
-	fmt.Println("Using size: ", size)
 
-	var file *os.File
-
-	if fileFlag == "" {
-		fmt.Println("Using file: ", "Stdout")
-		file = os.Stdout
-	} else {
-		var err error
-
-		fmt.Println("Using file: ", fileFlag)
-		absPath, err := filepath.Abs(fileFlag)
-		if err != nil {
-			fmt.Println("Error getting absolute path:", err)
-			return 0, nil
-		}
-		fmt.Println("Absolute path of the file:", absPath)
-
-		file, err = os.OpenFile(fileFlag, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
-		if err != nil {
-			panic(err)
-		}
-		fmt.Println("Name of the file:", file.Name())
+	if args.WriterChannelSize < 0 {
+		const defaultValue = 5
+		fmt.Printf("writer-channel-size must be at least 1. Changing it to %d. it was %d\n",
+			defaultValue, args.WriterChannelSize)
+		args.WriterChannelSize = defaultValue
 	}
-	return size, file
+
+	return args, nil
 }
 
 func main() {
 	start := time.Now()
-	size, file := readArgs()
-	defer func() {
-		err := file.Close()
+	config, err := parseArgs()
+	if err != nil {
+		panic(err)
+	}
+	var file *os.File
+	if config.OutputFile == "" {
+		file = os.Stdout
+	} else {
+		file, err = os.OpenFile(config.OutputFile, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 		if err != nil {
-			return
+			panic(err)
 		}
-	}()
+	}
 
-	pb := progressbar.NewProgressBar(size)
-	pb.Label = "Progress: "
-	fmt.Println(strings.Repeat("==", 50))
-	const chunkSize = 100_000
-	out := generateData(size, chunkSize, 2, 10)
-	afterChunk := WriteToFile(out, file)
+	defer file.Close()
+
+	generate(config, file)
+
+	elapsed := time.Since(start)
+	fmt.Printf("Created file with %d measurements in %s\n", config.Lines, elapsed)
+}
+
+func generate(config *Config, outputFile *os.File) {
+	pb := progressbar.NewProgressBar(config.Lines)
+	pb.Label = "Progress"
+	fmt.Println(strings.Repeat("=", 50))
+
+	chunkSize := min(100_000, 1+config.Lines/config.Generators)
+	out := generateData(config.Lines, chunkSize, config.Generators, config.WriterChannelSize)
+	afterChunk := WriteToFile(out, outputFile)
+
 	for range afterChunk {
 		pb.Update(chunkSize)
 	}
 	pb.Done()
 
-	elapsed := time.Since(start)
-	fmt.Printf("Created file with %d measurements in %s\n", size, elapsed)
 }
-
 func appendRowFormattedString(w strings.Builder, station WeatherStation) (err error) {
 	w.WriteString(fmt.Sprintf("%s;%.1f\n", station.ID, station.Measurement()))
 	return err
@@ -170,7 +199,6 @@ func WriteToFile(in chan []byte, file *os.File) chan struct{} {
 }
 
 func writeToFile(in chan []byte, out chan struct{}, file *os.File) {
-	fmt.Println("writing to file, ", file.Name())
 	w := bufio.NewWriter(file)
 	for data := range in {
 		_, err := w.Write(data)
