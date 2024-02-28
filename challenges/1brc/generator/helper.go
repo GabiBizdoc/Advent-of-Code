@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"strconv"
-	"sync"
 	"sync/atomic"
 	"time"
 )
@@ -49,26 +48,4 @@ func (c *CustomItoa) Parse(n int) string {
 		panic(fmt.Sprintf("invalid temperature %d", n))
 	}
 	return c.positiveItoa[n]
-}
-
-// SlicePool not used
-type SlicePool struct {
-	slicePool sync.Pool
-}
-
-func (s *SlicePool) Get() []byte {
-	return s.slicePool.Get().([]byte)
-}
-
-func (s *SlicePool) Put(b []byte) {
-	b = b[0:0]
-	s.slicePool.Put(b)
-}
-
-func NewSlicePool() *SlicePool {
-	return &SlicePool{slicePool: sync.Pool{
-		New: func() interface{} {
-			return make([]byte, 0, 10000)
-		},
-	}}
 }

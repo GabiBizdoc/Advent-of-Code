@@ -3,78 +3,14 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"flag"
 	"fmt"
 	"github.com/GabiBizdoc/golang-playground/pkg/progressbar"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 )
-
-type Config struct {
-	OutputFile        string
-	Lines             int
-	Generators        int
-	WriterChannelSize int
-	Help              bool
-}
-
-func NewConfig() *Config {
-	return &Config{Lines: 1000, Generators: 10, WriterChannelSize: 10, Help: false}
-}
-
-func parseArgs() (*Config, error) {
-	args := NewConfig()
-
-	flag.StringVar(&args.OutputFile, "output", "", "Output file. Skip for stdout: Example --output ./file.csv")
-	flag.IntVar(&args.Lines, "lines", 0, "Number of lines. Must be bigger than 0: Example --size 1_000_000_000")
-	flag.IntVar(&args.Generators, "generators", 0, "Number of goroutines used to generated data: --generators 10")
-	flag.IntVar(&args.WriterChannelSize, "writer-channel-size", 0, "Number of chunks buffered. Must be bigger than 0: --writer-channel-size 10")
-	flag.BoolVar(&args.Help, "h", false, "Help")
-
-	flag.Parse()
-
-	if args.Help {
-		flag.Usage()
-		os.Exit(0)
-	}
-	if args.Lines <= 0 {
-		flag.Usage()
-		os.Exit(0)
-	}
-
-	var err error
-	if args.OutputFile != "" {
-		args.OutputFile, err = filepath.Abs(args.OutputFile)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	if args.Generators <= 0 {
-		const defaultValue = 10
-		fmt.Printf("generators must be at least 1. Changing it to %d. it was %d\n",
-			defaultValue, args.Generators)
-		args.Generators = defaultValue
-	}
-
-	if args.Lines <= 0 {
-		fmt.Println("lines must be at least 1")
-		os.Exit(1)
-	}
-
-	if args.WriterChannelSize < 0 {
-		const defaultValue = 5
-		fmt.Printf("writer-channel-size must be at least 1. Changing it to %d. it was %d\n",
-			defaultValue, args.WriterChannelSize)
-		args.WriterChannelSize = defaultValue
-	}
-
-	return args, nil
-}
 
 func main() {
 	start := time.Now()
@@ -82,13 +18,16 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("%#v\n", config)
-
+	fmt.Printf("%#v\n\n", config)
+	fmt.Println(PreviewArguments(config))
+	if config.DryRun.Value {
+		return
+	}
 	var file *os.File
-	if config.OutputFile == "" {
+	if config.OutputFile.Value == "" {
 		file = os.Stdout
 	} else {
-		file, err = os.OpenFile(config.OutputFile, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
+		file, err = os.OpenFile(config.OutputFile.Value, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 		if err != nil {
 			panic(err)
 		}
@@ -99,20 +38,20 @@ func main() {
 	generate(config, file)
 
 	elapsed := time.Since(start)
-	fmt.Printf("Created file with %d measurements in %s\n", config.Lines, elapsed)
+	fmt.Printf("Created file with %d measurements in %s\n", config.Lines.Value, elapsed)
 }
 
 func generate(config *Config, outputFile *os.File) {
-	pb := progressbar.NewProgressBar(config.Lines)
+	pb := progressbar.NewProgressBar(config.Lines.Value)
 	pb.Label = "Progress"
 	fmt.Println(strings.Repeat("=", 50))
 
-	chunkSize := min(100_000, 1+config.Lines/config.Generators)
-	out := generateData(config.Lines, chunkSize, config.Generators, config.WriterChannelSize)
+	chunkSize := min(100_000, 1+config.Lines.Value/config.Generators.Value)
+	out := generateData(config.Lines.Value, chunkSize, config.Generators.Value, config.WriterChannelSize.Value)
 	afterChunk := WriteToFile(out, outputFile)
 
 	for range afterChunk {
-		pb.Update(chunkSize)
+		pb.Update(min(chunkSize, config.Lines.Value-pb.Current))
 	}
 	pb.Done()
 
