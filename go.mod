@@ -1,6 +1,6 @@
 module aoc
 
-go 1.21.4
+go 1.22.0
 
 require (
 	github.com/GabiBizdoc/golang-playground v0.0.0-20240228081038-4cdfaf44465a
