@@ -1,7 +1,7 @@
 package main
 
 import (
-	"aoc/y2023/day_05/another_solution_part2/solution"
+	"aoc/y2023/day_05/part2_optimal/solution"
 	"flag"
 	"fmt"
 	"time"
