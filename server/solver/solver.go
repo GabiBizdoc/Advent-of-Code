@@ -16,7 +16,7 @@ import (
 
 func buildCommandArgs(day, part int) (string, []string) {
 	if env.Config.IsDev {
-		return "go", []string{"run", "cmd/solver/main.go", "-day=" + strconv.Itoa(day), "-part=" + strconv.Itoa(part)}
+		return "go", []string{"run", "cmd/server/main.go", "-day=" + strconv.Itoa(day), "-part=" + strconv.Itoa(part)}
 	}
 	return "/app/data/main", []string{"-day=" + strconv.Itoa(day), "-part=" + strconv.Itoa(part)}
 }

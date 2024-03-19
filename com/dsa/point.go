@@ -32,12 +32,12 @@ func (p *Point) IsInGrid(rows, columns int) bool {
 }
 
 func (p *Point) Neighbours() []*Point {
-	neighbours := make([]*Point, 0, 4)
-	neighbours = append(neighbours, p.Cone().MoveUp())
-	neighbours = append(neighbours, p.Cone().MoveDown())
-	neighbours = append(neighbours, p.Cone().MoveLeft())
-	neighbours = append(neighbours, p.Cone().MoveRight())
-	return neighbours
+	return []*Point{
+		p.Cone().MoveUp(),
+		p.Cone().MoveDown(),
+		p.Cone().MoveLeft(),
+		p.Cone().MoveRight(),
+	}
 }
 
 func (p *Point) String() string {
