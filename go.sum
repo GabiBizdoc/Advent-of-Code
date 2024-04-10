@@ -2,6 +2,8 @@ github.com/GabiBizdoc/golang-playground v0.0.0-20240228015426-73efc8594b46 h1:f1
 github.com/GabiBizdoc/golang-playground v0.0.0-20240228015426-73efc8594b46/go.mod h1:eGh7/AJ333Qr0O1+Dts8M3zxnRIVyP5RiABzmeWw//I=
 github.com/GabiBizdoc/golang-playground v0.0.0-20240228081038-4cdfaf44465a h1:S9/VjT5fcyL9so6KO1YRymIt2IBxtZQ5uI+p09KP64U=
 github.com/GabiBizdoc/golang-playground v0.0.0-20240228081038-4cdfaf44465a/go.mod h1:eGh7/AJ333Qr0O1+Dts8M3zxnRIVyP5RiABzmeWw//I=
+github.com/GabiBizdoc/golang-playground v0.0.0-20240410151343-8f60e1d0d1a9 h1:JqH02bwiBwaCfeW1lUKCsH4BzU5g8LsjT8CW9cTqW6g=
+github.com/GabiBizdoc/golang-playground v0.0.0-20240410151343-8f60e1d0d1a9/go.mod h1:+93NNpaniAetJcHQszQqTfVo6h0eZh4nj+n+M3uSHhc=
 github.com/andybalholm/brotli v1.0.5 h1:8uQZIdzKmjc/iuPu7O2ioW48L81FgatrcpfFmiq/cCs=
 github.com/andybalholm/brotli v1.0.5/go.mod h1:fO7iG3H7G2nSZ7m0zPUDn85XEX2GTukHGRSepvi9Eig=
 github.com/andybalholm/brotli v1.1.0 h1:eLKJA0d02Lf0mVpIDgYnqXcUn0GqVmEFny3VuID1U3M=
@@ -10,6 +12,8 @@ github.com/gofiber/fiber/v2 v2.51.0 h1:JNACcZy5e2tGApWB2QrRpenTWn0fq0hkFm6k0C86g
 github.com/gofiber/fiber/v2 v2.51.0/go.mod h1:xaQRZQJGqnKOQnbQw+ltvku3/h8QxvNi8o6JiJ7Ll0U=
 github.com/gofiber/fiber/v2 v2.52.1 h1:1RoU2NS+b98o1L77sdl5mboGPiW+0Ypsi5oLmcYlgHI=
 github.com/gofiber/fiber/v2 v2.52.1/go.mod h1:KEOE+cXMhXG0zHc9d8+E38hoX+ZN7bhOtgeF2oT6jrQ=
+github.com/gofiber/fiber/v2 v2.52.4 h1:P+T+4iK7VaqUsq2PALYEfBBo6bJZ4q3FP8cZ84EggTM=
+github.com/gofiber/fiber/v2 v2.52.4/go.mod h1:KEOE+cXMhXG0zHc9d8+E38hoX+ZN7bhOtgeF2oT6jrQ=
 github.com/gofiber/template v1.8.2 h1:PIv9s/7Uq6m+Fm2MDNd20pAFFKt5wWs7ZBd8iV9pWwk=
 github.com/gofiber/template v1.8.2/go.mod h1:bs/2n0pSNPOkRa5VJ8zTIvedcI/lEYxzV3+YPXdBvq8=
 github.com/gofiber/template v1.8.3 h1:hzHdvMwMo/T2kouz2pPCA0zGiLCeMnoGsQZBTSYgZxc=

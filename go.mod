@@ -3,8 +3,8 @@ module aoc
 go 1.22.0
 
 require (
-	github.com/GabiBizdoc/golang-playground v0.0.0-20240228081038-4cdfaf44465a
-	github.com/gofiber/fiber/v2 v2.52.1
+	github.com/GabiBizdoc/golang-playground v0.0.0-20240410151343-8f60e1d0d1a9
+	github.com/gofiber/fiber/v2 v2.52.4
 	github.com/gofiber/template/html/v2 v2.1.1
 	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.10.9

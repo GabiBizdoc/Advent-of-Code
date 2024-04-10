@@ -6,6 +6,7 @@ import (
 	"aoc/server/db"
 	"errors"
 	"fmt"
+	"github.com/GabiBizdoc/golang-playground/pkg/geoip"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/gofiber/fiber/v2/middleware/compress"
@@ -69,6 +70,12 @@ func fiberApp() *fiber.App {
 	app.Use(helmet.New())
 	app.Use(requestid.New())
 
+	var region geoip.Region
+	if geoipsJson, err := os.ReadFile("./geoips.json"); err != nil {
+		panic(err)
+	} else if err := region.LoadFromJson(geoipsJson); err != nil {
+		panic(err)
+	}
 	app.Use(func(c *fiber.Ctx) error {
 		ip := c.Get("X-Real-IP")
 		if ip == "" {
@@ -77,8 +84,19 @@ func fiberApp() *fiber.App {
 		if ip == "" {
 			ip = c.IP()
 		}
-
 		c.Locals("realIP", ip)
+		return c.Next()
+	})
+	app.Use(func(c *fiber.Ctx) error {
+		ip, ok := c.Locals("realIP").(string)
+		if !ok {
+			return nil
+		}
+
+		ok, err := region.ContainsIpStr(ip)
+		if err == nil && ok {
+			log.Info("Ip Found In Region: ", ip)
+		}
 		return c.Next()
 	})
 
